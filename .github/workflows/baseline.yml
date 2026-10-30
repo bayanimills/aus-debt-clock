@@ -1,0 +1,33 @@
+name: Refresh AOFM baseline
+
+on:
+  schedule:
+    # AOFM refreshes the home-page face-value print on Fridays (AEST).
+    # Saturday 10:00 AEST (Friday 00:00 UTC + 24h) with a Monday retry.
+    - cron: "0 0 * * 6"
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r tools/requirements.txt
+      - run: python tools/update_baseline.py
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- data/baseline.json; then
+            echo "baseline unchanged"; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/baseline.json
+          git commit -m "data: refresh AOFM baseline"
+          git push

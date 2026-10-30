@@ -1,0 +1,7 @@
+firmware/secrets.py
+__pycache__/
+.pytest_cache/
+*.uf2
+*.xlsx
+.venv/
+hardware/backup/
